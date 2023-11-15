@@ -1,0 +1,228 @@
+name: Flutter Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  flutter_test:
+    runs-on: ubuntu-latest
+    outputs:
+      no_changes_in_packages: ${{ steps.check_changes.outputs.no_changes_in_packages }}
+      test_success: ${{ job.status == 'success' }} # Change here to use job.status
+      test_complete: "true"
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check changes in /packages
+        id: check_changes
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD | grep '^packages/' || true)
+          if [[ $? -ne 0 ]]; then
+            echo "Error in git diff command"
+            exit 1
+          fi
+          if [[ -z "$CHANGED" ]]; then
+            echo "::set-output name=no_changes_in_packages::true"
+            # Set job-level output
+            echo "no_changes_in_packages=true" >> $GITHUB_ENV
+          fi
+        shell: /usr/bin/bash -e {0}
+
+      - name: Cache Flutter SDK
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        uses: actions/cache@v2
+        with:
+          path: |
+            .pub-cache/bin/
+            .flutter/bin/cache/artifacts/
+            .flutter/bin/cache/dart-sdk/
+          key: ${{ runner.os }}-flutter-${{ hashFiles('.flutter/bin/internal/engine.version') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Cache Pub Dependencies
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        uses: actions/cache@v2
+        with:
+          path: "**/pubspec.lock"
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Set up Flutter
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        uses: subosito/flutter-action@v1
+
+      - name: Flutter get
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        run: flutter pub get
+
+      - name: Run Tests
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        run: flutter test --coverage > test_results.txt
+
+      - name: Update Coverage Badge
+          if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+          uses: we-cli/coverage-badge-action@main
+
+      - name: Filter Test Results
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        run: |
+          grep -E "(🎉|::error::)" test_results.txt > filtered_test_results.txt || true
+          sed -i 's/::error::/❌ /g' filtered_test_results.txt
+        shell: /usr/bin/bash -e {0}
+        env:
+          FLUTTER_ROOT: /opt/hostedtoolcache/flutter/3.13.6-stable/x64
+          PUB_CACHE: /opt/hostedtoolcache/flutter/3.13.6-stable/x64/.pub-cache
+
+      - name: Get Filtered Test Results
+        id: get_filtered_test_results
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        run: echo "::set-output name=test_results::$(cat filtered_test_results.txt)"
+
+      - name: Check if filtered file was created
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        run: |
+          ls -lh filtered_test_results.txt || echo "File not found"
+          cat filtered_test_results.txt
+
+      - name: Set status emoji
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        id: set_status_emoji
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            echo "::set-output name=status_emoji::✅"
+          else
+            echo "::set-output name=status_emoji::❌"
+          fi
+
+      - name: Process test results for Discord
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        id: process_test_results
+        run: |
+          fields=""
+          while IFS= read -r line; do
+            module=$(echo "$line" | cut -d ':' -f 1 | tr -d '[]')
+            result=$(echo "$line" | cut -d ':' -f 2-)
+            # Construct each field as a JSON object and append to the fields string
+            fields="${fields}{ \"name\": \"${module}:\", \"value\": \"\`\`\`${result}\`\`\`\" },"
+          done < filtered_test_results.txt
+          # Remove the trailing comma
+          fields=${fields%,}
+          # Output the constructed fields
+          echo "::set-output name=test_results_fields::$fields"
+
+      - name: Notify Discord on Completion
+        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
+        env:
+          DISCORD_EMBEDS: '[{
+                           "author": {
+                             "icon_url": "https://avatars.githubusercontent.com/${{ github.actor }}",
+                             "name": "${{ github.actor }}",
+                             "url": "https://github.com/${{github.actor}}"
+                           },
+                           "url": "https://github.com/${{github.repository}}/commit/${{github.sha}}",
+                           "fields": [
+                             { "name": "Repository", "value": "[${{github.event.repository.name}}](${{github.event.repository.clone_url}})", "inline": true },
+                             { "name": "Branch", "value": "[${{github.ref_name}}](https://github.com/${{github.repository}}/tree/${{github.ref_name}})", "inline": true },
+                             { "name": "Event", "value": "${{github.event_name}}", "inline": true },
+                             { "name": "Job", "value": "${{github.job}}", "inline": true },
+                             { "name": "Status", "value": "${{ job.status }} ${{ steps.set_status_emoji.outputs.status_emoji }}" },
+                             ${{ steps.process_test_results.outputs.test_results_fields }},
+                             { "name": "Commit Message", "value": "[${{github.sha}}](https://github.com/${{github.repository}}/commit/${{github.sha}}) - `${{github.event.head_commit.message}}`" },
+                             { "name": "Author", "value": "[${{github.event.head_commit.author.name}}](https://github.com/${{github.actor}})" }
+                           ],
+                           "color": 1127128,
+                           "timestamp": "${{github.event.head_commit.timestamp}}",
+                           "footer": { "text": "${{github.event.head_commit.timestamp}}" }
+                         }]'
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_AVATAR: https://cdn.theatlantic.com/thumbor/FPTWEk2jCD_GOlSx-Q3p04tDPOk=/302x50:4317x2308/1600x900/media/img/mt/2014/08/shutterstock_187027727-1/original.jpg
+        uses: Ilshidur/action-discord@0.3.2
+
+  default_notify:
+    needs: flutter_test
+    if: needs.flutter_test.outputs.no_changes_in_packages == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Default Notification to Discord
+        env:
+          DISCORD_EMBEDS: '[{
+           "author": {
+             "icon_url": "https://avatars.githubusercontent.com/${{ github.actor }}",
+             "name": "${{ github.actor }}",
+             "url": "https://github.com/${{github.actor}}"
+           },
+           "url": "https://github.com/${{github.repository}}/commit/${{github.sha}}",
+           "fields": [
+             { "name": "Repository", "value": "[${{github.event.repository.name}}](${{github.event.repository.clone_url}})", "inline": true },
+             { "name": "Branch", "value": "[${{github.ref_name}}](https://github.com/${{github.repository}}/tree/${{github.ref_name}})", "inline": true },
+             { "name": "Event", "value": "${{github.event_name}}", "inline": true },
+             { "name": "Status", "value": "No changes in code" },
+             { "name": "Commit Message", "value": "[${{github.sha}}](https://github.com/${{github.repository}}/commit/${{github.sha}}) - `${{github.event.head_commit.message}}`" },
+             { "name": "Author", "value": "[${{github.event.head_commit.author.name}}](https://github.com/${{github.actor}})" }
+           ],
+           "color": 1127128,
+           "timestamp": "${{github.event.head_commit.timestamp}}",
+           "footer": { "text": "${{github.event.head_commit.timestamp}}" }
+         }]'
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_AVATAR: https://cdn.theatlantic.com/thumbor/FPTWEk2jCD_GOlSx-Q3p04tDPOk=/302x50:4317x2308/1600x900/media/img/mt/2014/08/shutterstock_187027727-1/original.jpg
+        uses: Ilshidur/action-discord@0.3.2
+
+#  conditional_deploy:
+#    needs: flutter_test
+#    runs-on: ubuntu-latest
+#    if: needs.flutter_test.outputs.no_changes_in_packages != 'true' && needs.flutter_test.outputs.test_success == 'true'
+#    steps:
+#      - name: Checkout the repo
+#        uses: actions/checkout@v2
+#
+#      - name: Set up Flutter
+#        uses: subosito/flutter-action@v1
+#
+#      - name: Bootstrap Melos
+#        run: flutter pub global activate melos && flutter pub global run melos bootstrap
+#
+#      - name: Build Web App with Melos
+#        run: melos build_web
+#
+#      - name: Deploy to Firebase
+#        uses: w9jds/firebase-action@master
+#        with:
+#          args: deploy --only hosting:atlas
+#        env:
+#          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+
+  notify_discord:
+    needs: conditional_deploy
+    runs-on: ubuntu-latest
+    if: needs.conditional_deploy.result == 'success' # This ensures that the notification only sends if the deployment is successful
+    steps:
+      - name: Send Notification to Discord
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_EMBEDS: '[{
+           "author": {
+             "icon_url": "https://avatars.githubusercontent.com/${{ github.actor }}",
+             "name": "${{ github.actor }}",
+             "url": "https://github.com/${{github.actor}}"
+           },
+           "url": "https://github.com/${{github.repository}}/commit/${{github.sha}}",
+           "fields": [
+                { "name": "Atlas", "value": "New deployment to Firebase Hosting is successful! :rocket: Check out the live site at https://atlas-burguer.web.app", "inline": true }
+           ],
+           "color": 1127128,
+           "timestamp": "${{github.event.head_commit.timestamp}}",
+           "footer": { "text": "${{github.event.head_commit.timestamp}}" }
+          }]'
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_AVATAR: https://cdn.theatlantic.com/thumbor/FPTWEk2jCD_GOlSx-Q3p04tDPOk=/302x50:4317x2308/1600x900/media/img/mt/2014/08/shutterstock_187027727-1/original.jpg
