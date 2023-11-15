@@ -202,27 +202,27 @@ jobs:
 #          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
 
-  notify_discord:
-    needs: conditional_deploy
-    runs-on: ubuntu-latest
-    if: needs.conditional_deploy.result == 'success' # This ensures that the notification only sends if the deployment is successful
-    steps:
-      - name: Send Notification to Discord
-        uses: Ilshidur/action-discord@0.3.2
-        env:
-          DISCORD_EMBEDS: '[{
-           "author": {
-             "icon_url": "https://avatars.githubusercontent.com/${{ github.actor }}",
-             "name": "${{ github.actor }}",
-             "url": "https://github.com/${{github.actor}}"
-           },
-           "url": "https://github.com/${{github.repository}}/commit/${{github.sha}}",
-           "fields": [
-                { "name": "Atlas", "value": "New deployment to Firebase Hosting is successful! :rocket: Check out the live site at https://atlas-burguer.web.app", "inline": true }
-           ],
-           "color": 1127128,
-           "timestamp": "${{github.event.head_commit.timestamp}}",
-           "footer": { "text": "${{github.event.head_commit.timestamp}}" }
-          }]'
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          DISCORD_AVATAR: https://cdn.theatlantic.com/thumbor/FPTWEk2jCD_GOlSx-Q3p04tDPOk=/302x50:4317x2308/1600x900/media/img/mt/2014/08/shutterstock_187027727-1/original.jpg
+#  notify_discord:
+#    needs: conditional_deploy
+#    runs-on: ubuntu-latest
+#    if: needs.conditional_deploy.result == 'success' # This ensures that the notification only sends if the deployment is successful
+#    steps:
+#      - name: Send Notification to Discord
+#        uses: Ilshidur/action-discord@0.3.2
+#        env:
+#          DISCORD_EMBEDS: '[{
+#           "author": {
+#             "icon_url": "https://avatars.githubusercontent.com/${{ github.actor }}",
+#             "name": "${{ github.actor }}",
+#             "url": "https://github.com/${{github.actor}}"
+#           },
+#           "url": "https://github.com/${{github.repository}}/commit/${{github.sha}}",
+#           "fields": [
+#                { "name": "Atlas", "value": "New deployment to Firebase Hosting is successful! :rocket: Check out the live site at https://atlas-burguer.web.app", "inline": true }
+#           ],
+#           "color": 1127128,
+#           "timestamp": "${{github.event.head_commit.timestamp}}",
+#           "footer": { "text": "${{github.event.head_commit.timestamp}}" }
+#          }]'
+#          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#          DISCORD_AVATAR: https://cdn.theatlantic.com/thumbor/FPTWEk2jCD_GOlSx-Q3p04tDPOk=/302x50:4317x2308/1600x900/media/img/mt/2014/08/shutterstock_187027727-1/original.jpg
