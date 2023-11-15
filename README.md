@@ -42,7 +42,7 @@ Contribuições são sempre bem-vindas! Se você tem alguma ideia, bug ou melhor
 
 ##Licença
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
 
 Desenvolvido com ❤️ por [Renato Bosa]
 
