@@ -68,10 +68,6 @@ jobs:
         if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         run: flutter test --coverage > test_results.txt
 
-      - name: Update Coverage Badge
-        if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-        uses: we-cli/coverage-badge-action@main
-
       - name: Setup LCOV
         uses: hrishikesh-kadam/setup-lcov@v1
 
@@ -82,6 +78,11 @@ jobs:
           minimum-coverage: 95
           artifact-name: code-coverage-report
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Coverage Badge
+          if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+          uses: we-cli/coverage-badge-action@main
+
       - name: Filter Test Results
         if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         run: |
