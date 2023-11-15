@@ -41,12 +41,14 @@ flutter run
 Contribuições são sempre bem-vindas! Se você tem alguma ideia, bug ou melhoria, sinta-se à vontade para criar um 'issue' ou um 'pull request'.
 
 ##Licença
-[Escolher uma Licença Apropriada]
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details.
 
 Desenvolvido com ❤️ por [Renato Bosa]
 
 
 ##Badges
+
 [![Coverage](https://img.shields.io/badge/100-100?label=coverage&color=green)](https://github.com/Devs-Digits/news_app/tree/master/coverage/html)
 ![GitHub language count](https://img.shields.io/github/languages/count/Devs-Digits/news_app)
 ![GitHub top language](https://img.shields.io/github/languages/top/Devs-Digits/news_app)
