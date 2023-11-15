@@ -49,7 +49,7 @@ Desenvolvido com ❤️ por [Renato Bosa]
 
 ##Badges
 
-[![Coverage](https://img.shields.io/badge/100-100?label=coverage&color=green)](https://github.com/Devs-Digits/news_app/tree/master/coverage/html)
+[![Coverage](https://img.shields.io/badge/100-100?label=coverage&color=green)](https://devs-digits.github.io/news_app/coverage/html/)
 ![GitHub language count](https://img.shields.io/github/languages/count/Devs-Digits/news_app)
 ![GitHub top language](https://img.shields.io/github/languages/top/Devs-Digits/news_app)
 
