@@ -20,23 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check changes in /packages
-        id: check_changes
-        run: |
-          CHANGED=$(git diff --name-only HEAD~1 HEAD | grep '^packages/' || true)
-          if [[ $? -ne 0 ]]; then
-            echo "Error in git diff command"
-            exit 1
-          fi
-          if [[ -z "$CHANGED" ]]; then
-            echo "::set-output name=no_changes_in_packages::true"
-            # Set job-level output
-            echo "no_changes_in_packages=true" >> $GITHUB_ENV
-          fi
-        shell: /usr/bin/bash -e {0}
-
       - name: Cache Flutter SDK
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         uses: actions/cache@v2
         with:
           path: |
@@ -48,7 +32,6 @@ jobs:
             ${{ runner.os }}-flutter-
 
       - name: Cache Pub Dependencies
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         uses: actions/cache@v2
         with:
           path: "**/pubspec.lock"
@@ -57,15 +40,12 @@ jobs:
             ${{ runner.os }}-pub-
 
       - name: Set up Flutter
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         uses: subosito/flutter-action@v1
 
       - name: Flutter get
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         run: flutter pub get
 
       - name: Run Tests
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         run: flutter test --coverage > test_results.txt
 
       - name: Setup LCOV
@@ -80,7 +60,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Filter Test Results
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         run: |
           grep -E "(🎉|::error::)" test_results.txt > filtered_test_results.txt || true
           sed -i 's/::error::/❌ /g' filtered_test_results.txt
@@ -91,17 +70,14 @@ jobs:
 
       - name: Get Filtered Test Results
         id: get_filtered_test_results
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         run: echo "::set-output name=test_results::$(cat filtered_test_results.txt)"
 
       - name: Check if filtered file was created
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         run: |
           ls -lh filtered_test_results.txt || echo "File not found"
           cat filtered_test_results.txt
 
       - name: Set status emoji
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         id: set_status_emoji
         run: |
           if [[ "${{ job.status }}" == "success" ]]; then
@@ -111,7 +87,6 @@ jobs:
           fi
 
       - name: Process test results for Discord
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         id: process_test_results
         run: |
           fields=""
@@ -127,7 +102,6 @@ jobs:
           echo "::set-output name=test_results_fields::$fields"
 
       - name: Notify Discord on Completion
-        if: steps.check_changes.outputs.no_changes_in_packages != 'true'
         env:
           DISCORD_EMBEDS: '[{
                            "author": {
