@@ -34,5 +34,7 @@ dev_dependencies:
   flutter_gherkin: ^2.0.0
   firebase_core_platform_interface: 5.0.0
   firebase_auth_mocks: 0.13.0
+  test_coverage_badge: ^0.0.1+1
+
 
 flutter:

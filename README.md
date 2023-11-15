@@ -46,6 +46,15 @@ Contribuições são sempre bem-vindas! Se você tem alguma ideia, bug ou melhor
 Desenvolvido com ❤️ por [Renato Bosa]
 
 
-##Coverage
-+ [![cov](https://Devs-Digits.github.io/news_app/badges/coverage.svg)](https://github.com/Devs-Digits/news_app/actions)
+##Badges
+[![Coverage](https://img.shields.io/badge/100-100?label=coverage&color=green)](https://github.com/Devs-Digits/news_app/tree/master/coverage/html)
+![GitHub language count](https://img.shields.io/github/languages/count/Devs-Digits/news_app)
+![GitHub top language](https://img.shields.io/github/languages/top/Devs-Digits/news_app)
+
+
+
+
+
+
+
 
