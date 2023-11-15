@@ -327,7 +327,7 @@
     },
     {
       "name": "flutter",
-      "rootUri": "file:///users/renatoaugustobosafilho/flutter/packages/flutter",
+      "rootUri": "file:///Users/renatoaugustobosafilho/flutter/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -339,7 +339,7 @@
     },
     {
       "name": "flutter_driver",
-      "rootUri": "file:///users/renatoaugustobosafilho/flutter/packages/flutter_driver",
+      "rootUri": "file:///Users/renatoaugustobosafilho/flutter/packages/flutter_driver",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -357,13 +357,13 @@
     },
     {
       "name": "flutter_test",
-      "rootUri": "file:///users/renatoaugustobosafilho/flutter/packages/flutter_test",
+      "rootUri": "file:///Users/renatoaugustobosafilho/flutter/packages/flutter_test",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
     {
       "name": "flutter_web_plugins",
-      "rootUri": "file:///users/renatoaugustobosafilho/flutter/packages/flutter_web_plugins",
+      "rootUri": "file:///Users/renatoaugustobosafilho/flutter/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -375,7 +375,7 @@
     },
     {
       "name": "fuchsia_remote_debug_protocol",
-      "rootUri": "file:///users/renatoaugustobosafilho/flutter/packages/fuchsia_remote_debug_protocol",
+      "rootUri": "file:///Users/renatoaugustobosafilho/flutter/packages/fuchsia_remote_debug_protocol",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -633,7 +633,7 @@
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///users/renatoaugustobosafilho/flutter/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///Users/renatoaugustobosafilho/flutter/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },
@@ -806,7 +806,7 @@
       "languageVersion": "3.1"
     }
   ],
-  "generated": "2023-11-15T17:10:33.977723Z",
+  "generated": "2023-11-15T17:53:30.518112Z",
   "generator": "pub",
   "generatorVersion": "3.1.5"
 }
